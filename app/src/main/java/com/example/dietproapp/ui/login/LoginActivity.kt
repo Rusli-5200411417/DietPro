@@ -40,6 +40,9 @@ class LoginActivity : AppCompatActivity() {
         binding.btnMoveDaftar.setOnClickListener {
             intentActivity(RegisterActivity::class.java)
         }
+        binding.forgotPassword.setOnClickListener{
+            intentActivity(ForgotPasswordActivity::class.java)
+        }
 
     }
 

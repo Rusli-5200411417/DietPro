@@ -5,6 +5,7 @@ import com.example.dietproapp.core.data.source.remote.RemoteDataSource
 import com.example.dietproapp.core.data.source.remote.network.ApiConfig
 import org.koin.dsl.module
 
+
 val appModule   =   module {
     single { ApiConfig.provideApiService }
     single { RemoteDataSource(get()) }

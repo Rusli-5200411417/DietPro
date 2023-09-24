@@ -5,11 +5,15 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class Laporan(
-    val jenis: String?,
-    val created_at: String?,
     val id: Int?,
     val id_user: Int?,
     val id_makanan: Int?,
+    val nama_bahan: String?,
+    val kalori: Int?,
+    val jumlah: Int?,
+    var jumlah_kalori: Int?,
+    val created_at: String?,
     val updated_at: String?,
-    val kalori: String?
+    val user: User,
+    val makanan: Makanan
 ) : Parcelable

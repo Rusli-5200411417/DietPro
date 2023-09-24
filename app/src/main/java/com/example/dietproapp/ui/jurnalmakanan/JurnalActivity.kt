@@ -1,7 +1,9 @@
 package com.example.dietproapp.ui.jurnalmakanan
 
 import android.os.Bundle
+
 import android.widget.Toast
+import androidx.appcompat.widget.SearchView
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -11,7 +13,6 @@ import com.example.dietproapp.R
 import com.example.dietproapp.core.data.source.model.Makanan
 import com.example.dietproapp.core.data.source.remote.network.State
 import com.example.dietproapp.databinding.ActivityJurnalBinding
-import com.example.dietproapp.databinding.FragmentStatistikBinding
 import com.example.dietproapp.ui.base.MyActivity
 import com.example.dietproapp.ui.jurnalmakanan.adapter.MenuJurnalAdapter
 import com.example.dietproapp.ui.statistik.StatistikFragment
@@ -21,7 +22,6 @@ import com.google.gson.JsonObject
 import com.inyongtisto.myhelper.extension.intentActivity
 import com.inyongtisto.myhelper.extension.isNull
 import com.inyongtisto.myhelper.extension.pushActivity
-import com.inyongtisto.myhelper.extension.showToast
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class JurnalActivity : MyActivity() {
@@ -30,8 +30,8 @@ class JurnalActivity : MyActivity() {
 
     private val binding get() = _binding!!
 
-
     private lateinit var listJurnalMakanan: RecyclerView
+    private lateinit var searchView: SearchView
 
     private val viewModel: JurnalMenuViewModel by viewModel()
 
@@ -39,13 +39,14 @@ class JurnalActivity : MyActivity() {
 
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _binding = ActivityJurnalBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
 
-
+        searchView = binding.searchView
 
 //        swipeRefreshLayout = binding.swipeRefreshLayout
 //        swipeRefreshLayout.setOnRefreshListener {
@@ -53,6 +54,7 @@ class JurnalActivity : MyActivity() {
 //            refreshData()
 //        }
 
+        setupSearchView()
         setupAdapter()
         getData()
         mainButton()
@@ -66,6 +68,10 @@ class JurnalActivity : MyActivity() {
     private fun mainButton(){
         binding.fabSimpan.setOnClickListener {
            store()
+        }
+
+        binding.imgBack.setOnClickListener{
+            intentActivity(NavigasiActivity::class.java)
         }
     }
 
@@ -92,6 +98,7 @@ class JurnalActivity : MyActivity() {
             }
         }
     }
+
     private fun store() {
         val user = SPrefs.getUser() // Ambil model User dari SPrefs
         val idUser = user?.id
@@ -119,13 +126,13 @@ class JurnalActivity : MyActivity() {
                 State.SUCCESS -> {
                     val message = "Data telah disimpan."
                     showToast(message)
-
-
-//                    val fragmentManager = supportFragmentManager
-//                    val transaction = fragmentManager.beginTransaction()
-//                    transaction.replace(R.id.fragemant_statistik, StatistikFragment())
-//                    transaction.addToBackStack(null)
+//
+//                    // Pindah ke StatistikFragment
+//                    val fragment = StatistikFragment()
+//                    val transaction = supportFragmentManager.beginTransaction()
+//                    transaction.replace(R.id., fragment)
 //                    transaction.commit()
+                    pushActivity(NavigasiActivity::class.java)
 
                 }
                 State.ERROR -> {
@@ -137,6 +144,18 @@ class JurnalActivity : MyActivity() {
                 }
             }
         }
+    }
+    private fun setupSearchView() {
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                adapter.filter.filter(newText)
+                return false
+            }
+        })
     }
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()

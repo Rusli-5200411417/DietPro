@@ -1,14 +1,20 @@
 package com.example.dietproapp.core.data.source.remote.network
 
 import com.example.dietproapp.core.data.source.model.JurnalMakanan
+import com.example.dietproapp.core.data.source.model.Laporan
+import com.example.dietproapp.core.data.source.model.Statistik
+import com.example.dietproapp.core.data.source.remote.request.ForgotPasswordRequest
 import com.example.dietproapp.core.data.source.remote.request.LaporanMakananRequest
 import com.example.dietproapp.core.data.source.remote.request.LoginRequest
 import com.example.dietproapp.core.data.source.remote.request.RegisterRequest
 import com.example.dietproapp.core.data.source.remote.request.UpdateRequest
+import com.example.dietproapp.core.data.source.remote.response.BaseListResponse
 import com.example.dietproapp.core.data.source.remote.response.BaseSingelResponse
+import com.example.dietproapp.core.data.source.remote.response.ForgotPasswordResponse
 import com.example.dietproapp.core.data.source.remote.response.LaporResponse
 import com.example.dietproapp.core.data.source.remote.response.LoginResponse
 import com.example.dietproapp.core.data.source.remote.response.MakananResponse
+import com.example.dietproapp.core.data.source.remote.response.NewsResponse
 import com.google.gson.JsonObject
 import okhttp3.MultipartBody
 import retrofit2.Response
@@ -28,6 +34,11 @@ interface ApiService {
         @Body data: RegisterRequest
     ):  Response<LoginResponse>
 
+    @POST("forgot-password")
+    suspend fun forgotPassword    (
+        @Body data: ForgotPasswordRequest
+    ):  Response<ForgotPasswordResponse>
+
     @PUT("update-user/{id}")
     suspend fun updateUser    (
         @Path("id") int: Int,
@@ -41,10 +52,6 @@ interface ApiService {
         @Body data: MultipartBody.Part? = null
     ):  Response<LoginResponse>
 
-//    @POST("jurnal-makanan")
-//    suspend fun menuJurnal   (
-//        @Body   data: Makanan
-//    ):  Response<BaseListResponse<Makanan>>
 
     @POST("makanan")
     suspend fun getmenuJurnal   (
@@ -55,10 +62,22 @@ interface ApiService {
         @Path("id") id: Int?,
         @Body requestJson: JsonObject
     ): Response<LaporResponse>
-
     @POST("laporan/{id}")
     suspend fun getLaporan   (
         @Path("id") id_user: Int? = null,
     ):  Response<LaporResponse>
+
+    @POST("minggu/{id}")
+    suspend fun getDataMinggu   (
+        @Path("id") id_user: Int? = null,
+    ):  Response<LaporResponse>
+
+    @POST("bulan/{id}")
+    suspend fun getDataBulan   (
+        @Path("id") id_user: Int? = null,
+    ):  Response<LaporResponse>
+    @GET("news")
+    suspend fun getNews(
+    ): Response<NewsResponse>
 
 }

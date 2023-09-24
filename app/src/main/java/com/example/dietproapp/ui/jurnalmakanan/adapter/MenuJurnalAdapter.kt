@@ -3,12 +3,15 @@ package com.example.dietproapp.ui.jurnalmakanan.adapter
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.Filter
+import android.widget.Filterable
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dietproapp.core.data.source.model.Makanan
 import com.example.dietproapp.databinding.ListJurnalBinding
+import java.util.Locale
 
 @SuppressLint("NotifyDataSetChanged")
-class MenuJurnalAdapter : RecyclerView.Adapter<MenuJurnalAdapter.ViewHolder>() {
+class MenuJurnalAdapter : RecyclerView.Adapter<MenuJurnalAdapter.ViewHolder>(),Filterable {
 
     var data = ArrayList<Makanan>()
     val checkedItems = mutableMapOf<Int, Boolean>()
@@ -26,6 +29,8 @@ class MenuJurnalAdapter : RecyclerView.Adapter<MenuJurnalAdapter.ViewHolder>() {
                 serat.text = item.Serat_Total_g
                 natrium.text = item.Natrium_mg
                 kalium.text = item.Kalium_mg
+                ukuran.text = item.Ukuran_Porsi
+                takaran.text = item.Takaran
             }
         }
     }
@@ -35,6 +40,34 @@ class MenuJurnalAdapter : RecyclerView.Adapter<MenuJurnalAdapter.ViewHolder>() {
         data.addAll(items)
         notifyDataSetChanged()
     }
+
+    override fun getFilter(): Filter {
+        return object : Filter() {
+            override fun performFiltering(constraint: CharSequence?): FilterResults {
+                val charSearch = constraint.toString().toLowerCase(Locale.getDefault())
+                data.clear()
+                if (charSearch.isEmpty()) {
+                    data.addAll(data)
+                } else {
+                    for (item in data) {
+                        if (item.Nama_Bahan?.toLowerCase(Locale.getDefault())?.contains(charSearch) == true) {
+                            data.add(item)
+                        }
+                    }
+                }
+                val filterResults = FilterResults()
+                filterResults.values = data
+                return filterResults
+            }
+
+            @Suppress("UNCHECKED_CAST")
+            override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
+                data = results?.values as ArrayList<Makanan>
+                notifyDataSetChanged()
+            }
+        }
+    }
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val viewHolder = ViewHolder(

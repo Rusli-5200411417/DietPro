@@ -5,17 +5,20 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.example.dietproapp.core.data.source.model.Laporan
+import com.example.dietproapp.core.data.source.remote.network.State
 import com.example.dietproapp.databinding.FragmentHomeBinding
 import com.example.dietproapp.ui.jurnalmakanan.JurnalActivity
-import com.example.dietproapp.ui.jurnalmakanan.MenuJurnalActivity
 import com.example.dietproapp.ui.profil.ProfilActivity
 import com.example.dietproapp.util.Constants
 import com.example.dietproapp.util.SPrefs
 import com.inyongtisto.myhelper.extension.getInitial
 import com.inyongtisto.myhelper.extension.intentActivity
+import com.inyongtisto.myhelper.extension.logs
 import com.squareup.picasso.Picasso
+import org.koin.androidx.viewmodel.ext.android.viewModel
+
 
 class HomeFragment : Fragment() {
 
@@ -23,15 +26,18 @@ class HomeFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    private val userId = SPrefs.getUserId()
+    private val viewModel: HomeViewModel by viewModel()
+    private var tampilKalori: String? = null
+
+
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val homeViewModel =
-            ViewModelProvider(this).get(HomeViewModel::class.java)
-
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
@@ -43,6 +49,8 @@ class HomeFragment : Fragment() {
 
         setUser()
         mainButton()
+        getData()
+        getnews()
         return root
     }
 
@@ -59,11 +67,11 @@ class HomeFragment : Fragment() {
         }
 
         binding.menuJurnal.setOnClickListener {
-            intentActivity(MenuJurnalActivity::class.java)
+            intentActivity(JurnalActivity::class.java)
         }
 
         binding.imgJurnal.setOnClickListener {
-            intentActivity(MenuJurnalActivity::class.java)
+            intentActivity(JurnalActivity::class.java)
         }
     }
 
@@ -76,7 +84,6 @@ class HomeFragment : Fragment() {
                 tvInisialProfil.text = user.nama.getInitial()
 
                 val targetKalori = user.kebutuhan_kalori
-//                tvTrackingKalori.text = targetKalori
 
                 if (targetKalori != null) {
                     tvTrackingKaloriMax.text = targetKalori
@@ -84,8 +91,6 @@ class HomeFragment : Fragment() {
                     tvTrackingKaloriMax.text = "Data belum lengkap!"
                 }
 
-                val kaloriSekarang = SPrefs.getLaporResponse()
-                val tampilKalori = kaloriSekarang?.total_kalori
                 val tampilKaloriInt = tampilKalori?.toIntOrNull() ?: 0
 
                 if (tampilKalori != null) {
@@ -108,6 +113,61 @@ class HomeFragment : Fragment() {
             }
         }
     }
+
+    private fun getData(){
+        viewModel.getLaporan(userId).observe(requireActivity()) {
+            when (it.state) {
+                State.SUCCESS -> {
+                    val data = it.data ?: emptyList<Laporan>()
+                    val jumlahKalori = data.sumOf { it.jumlah_kalori ?: 0 }.toString()
+                    tampilKalori = jumlahKalori
+                    setUser() // Update the UI when data changes
+                }
+                State.ERROR -> {
+                    // Handle the error, show a message to the user, or log it
+                    logs("Api", "API request failed")
+                }
+                State.LOADING -> {
+                    // You can handle loading state here, e.g., show a progress indicator
+                }
+            }
+        }
+    }
+    fun getnews() {
+        viewModel.getnews().observe(viewLifecycleOwner) { response ->
+            when (response.state) {
+                State.SUCCESS -> {
+                    val newsResponse = response.data
+                    if (newsResponse != null) {
+                        // Check the status field in the NewsResponse
+                        if (newsResponse.status == "ok") {
+                            // The API request was successful and the status is "ok"
+                            val articles = newsResponse.articles
+                            if (articles != null) {
+
+                            } else {
+
+                            }
+                        } else {
+                            // Handle the case where the API response status is not "ok"
+                            logs("Api", "API request failed with status: ${newsResponse.status}")
+                        }
+                    } else {
+                        // Handle the case where the API response data is null
+                        logs("Api", "API response data is null")
+                    }
+                }
+                State.ERROR -> {
+                    // Handle the error, show a message to the user, or log it
+                    logs("Api", "API request failed")
+                }
+                State.LOADING -> {
+                    // You can handle loading state here, e.g., show a progress indicator
+                }
+            }
+        }
+    }
+
 
     override fun onDestroyView() {
         super.onDestroyView()
